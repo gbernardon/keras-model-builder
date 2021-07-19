@@ -12,8 +12,12 @@ import os
 if not os.path.isdir('models'):
     os.mkdir('models')
 
+# Defining class names
+class_1 = 'not_separated'
+class_2 = 'separated'
+
 # setting path to the main directory
-main_dir = "data"
+main_dir = 'data'
 
 # Setting path to the training directory
 train_dir = os.path.join(main_dir, 'train')
@@ -22,16 +26,16 @@ train_dir = os.path.join(main_dir, 'train')
 test_dir = os.path.join(main_dir, 'test')
 
 # Directory with train broken tip images
-train_class_1_dir = os.path.join(train_dir, 'class_1')
+train_class_1_dir = os.path.join(train_dir, class_1)
 
 # Directory with train intact tip images
-train_class_2_dir = os.path.join(train_dir, 'class_2')
+train_class_2_dir = os.path.join(train_dir, class_2)
 
 # Directory with test broken tip image
-test_class_1_dir = os.path.join(test_dir, 'class_1')
+test_class_1_dir = os.path.join(test_dir, class_1)
 
 # Directory with test intact tip image
-test_class_2_dir = os.path.join(test_dir, 'class_2')
+test_class_2_dir = os.path.join(test_dir, class_2)
 
 # Creating a list of filenames in each directory
 train_class_1_names = os.listdir(train_class_1_dir)
@@ -78,7 +82,7 @@ dgen_test = ImageDataGenerator(rescale=1. / 255)
 # Parameters
 TARGET_SIZE = (224, 224)
 BATCH_SIZE = 32
-CLASS_MODE = 'binary'  # for two classes; categorical for over 2 classes
+CLASS_MODE = 'categorical'
 
 # Connecting the ImageDataGenerator objects to our dataset
 train_generator = dgen_train.flow_from_directory(train_dir,
@@ -121,7 +125,7 @@ model.add(Dropout(0.2))
 model.add(Flatten())
 model.add(Dense(256, activation='relu'))
 model.add(Dropout(0.2))
-model.add(Dense(1, activation='sigmoid'))
+model.add(Dense(2, activation='sigmoid'))
 
 model.summary()
 
@@ -168,27 +172,3 @@ model = tf.keras.models.load_model(' ') # choose model with best accuracy
 # Getting test accuracy and loss
 test_loss, test_acc = model.evaluate(test_generator)
 print('Test loss: {} Test Acc: {}'.format(test_loss, test_acc))
-
-
-
-# Making a Single Prediction
-import numpy as np
-from keras.preprocessing import image
-
-# load and resize image to 224x224
-test_image = image.load_img(' ', # path of an image to be tested
-                            target_size=(224, 224))
-
-# convert image to numpy array
-images = image.img_to_array(test_image)
-# expand dimension of image
-images = np.expand_dims(images, axis=0)
-# making prediction with model
-prediction = model.predict(images)
-
-if prediction == 0:
-    print('Class 1 detected')
-else:
-    print('Class 2 detected')
-
-# For new model training, load current model and do model.fit normally (make sure not to compile it again, as it will cause the weights to be lost)
